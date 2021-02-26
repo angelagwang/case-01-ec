@@ -32,15 +32,14 @@ plac <- data %>%
 
 mean and sd of age
 ```{r}
-
-mean(dig$AGE)
-sd(dig$AGE)
+round(mean(dig$AGE),1)
+round(sd(dig$AGE),1)
 ```
 
 mean and sd of ejection fraction
 ```{r}
-mean(dig$EJF_PER)
-sd(dig$EJF_PER)
+round(mean(dig$EJF_PER),1)
+round(sd(dig$EJF_PER),1)
 ```
 
 median duration of CHF
@@ -78,7 +77,8 @@ prop older than 70
 ```{r}
 dig %>%
   filter(`AGE` > 70) %>%
-  nrow()/ nrow(dig) 
+  count(`AGE` > 70) %>%
+  summarise(freq = round(n/nrow(dig),3)) 
 ```
 
 prop each method of assessing ejection fraction
@@ -97,7 +97,8 @@ prop cardiothoracic ratio
 ```{r}
 dig %>%
   filter(`CHESTX` > .55) %>%
-  nrow()/ nrow(dig)
+  count(`CHESTX` > .55) %>%
+  summarise(freq = round(n/nrow(dig),3)) 
 ```
 
 prop NYHA class
@@ -188,8 +189,9 @@ dig %>%
     `CHFETIOL` == 4 ~ "Idiopathic")) %>%
   count(`CHFETIOL`) %>%
   group_by(`CHFETIOL`) %>%
-  summarise(freq = (n / nrow(dig))) %>%
-  drop_na()
+  summarise(freq = round(n / nrow(dig),3)) %>%
+  drop_na() %>%
+  filter(CHFETIOL %in% c("Hypertensive", "Idiopathic", "Other"))
 ```
 
 prop diuretics
@@ -236,7 +238,7 @@ dig %>%
   filter(`DIGDOSE` %in% c(0.125, 0.250, 0.375, 0.500)) %>%
   count(`DIGDOSE`) %>%
   group_by(`DIGDOSE`) %>%
-  summarise(freq = (n / nrow(dig)))
+  summarise(freq = round(n / nrow(dig),3))
 ```
 
 
@@ -244,14 +246,14 @@ dig %>%
 
 mean and sd of age
 ```{r}
-mean(plac$AGE)
-sd(plac$AGE)
+round(mean(plac$AGE),1)
+round(sd(plac$AGE),1)
 ```
 
 mean and sd of ejection fraction
 ```{r}
-mean(plac$EJF_PER)
-sd(plac$EJF_PER)
+round(mean(plac$EJF_PER),1)
+round(sd(plac$EJF_PER),1)
 ```
 
 median duration of CHF
@@ -289,7 +291,8 @@ prop older than 70
 ```{r}
 plac %>%
   filter(`AGE` > 70) %>%
-  nrow()/ nrow(plac) 
+  count(`AGE` > 70) %>%
+  summarise(freq = round(n/nrow(plac),3)) 
 ```
 
 prop each method of assessing ejection fraction
@@ -308,7 +311,8 @@ prop cardiothoracic ratio
 ```{r}
 plac %>%
   filter(`CHESTX` > .55) %>%
-  nrow()/ nrow(plac)
+  count(`CHESTX` > .55) %>%
+  summarise(freq = round(n/nrow(plac),3)) 
 ```
 
 prop NYHA class
@@ -399,8 +403,9 @@ plac %>%
     `CHFETIOL` == 4 ~ "Idiopathic")) %>%
   count(`CHFETIOL`) %>%
   group_by(`CHFETIOL`) %>%
-  summarise(freq = (n / nrow(plac))) %>%
-  drop_na()
+  summarise(freq = round(n / nrow(plac),3)) %>%
+  drop_na() %>%
+  filter(CHFETIOL %in% c("Hypertensive", "Idiopathic", "Other"))
 ```
 
 prop diuretics
@@ -447,7 +452,7 @@ plac %>%
   filter(`DIGDOSE` %in% c(0.125, 0.250, 0.375, 0.500)) %>%
   count(`DIGDOSE`) %>%
   group_by(`DIGDOSE`) %>%
-  summarise(freq = (n / nrow(plac)))
+  summarise(freq = round(n / nrow(plac),3))
 ```
 
 #Table 4 Digoxin Values
@@ -473,6 +478,9 @@ dig %>%
 previous use of digoxin
 ```{r}
 dig %>%
+  mutate(`DIGUSE` = case_when(
+   `DIGUSE` == 1 ~ "Yes",
+   TRUE ~ "No")) %>%
   group_by(DIGUSE) %>%
   count(`DWHF`) %>%
   mutate(freq= round(n/sum(n),3)) %>%
@@ -552,6 +560,9 @@ plac %>%
 previous use of digoxin
 ```{r}
 plac %>%
+  mutate(`DIGUSE` = case_when(
+   `DIGUSE` == 1 ~ "Yes",
+   TRUE ~ "No")) %>%
   group_by(DIGUSE) %>%
   count(`DWHF`) %>%
   mutate(freq= round(n/sum(n),3)) %>%
@@ -834,4 +845,4 @@ summary(coxm1)
 
 
 #Discussion
-The values I calculated for table 1 and table 4 (except the risk ratio column) are very close to the ones in the report. Most of them are only off by .1% which is likely just due to differences in rounding. However, the risk ratio column in table 4 that I calculated has more differences from the original paper. The values are off by no more than .15, and the confidence intervals are much smaller than in the original paper. I calculated the risk ratios by dividing the percentage of patients on digoxin that experienced each level of the variable (ejection fraction, previous digoxin use cause of heart failure, ct ratio, NYHA class) by the percentage of patients on the placebo that experienced that same level. I chose to do it this way because that is how a risk ratio is usually calculated by hand. The researchers said that they estimated the risk ratios from the Cox proportional-hazards model; however, I tried finding the risk ratios using the model output, and the values were very different from the ones in the paper since many were over 1. Calculating the risk ratios by hand and using the actual definition of risk ratios brought me closer than trying to estimate them from the model, so I chose hand calculation instead. I believe are differences are because the researchers were very unclear in the paper how they calculated their risk ratios. Because it was so vague, I struggled with finding the right calculations to give me the same output. Additionally, Professor Jiang mentioned that the paper used the term risk ratio which is not actually the right term for the calculations which leads to grater confusion. I couldn't figure out what other calculations/formulas the reserarchers were doing to get those number, so I just chose the traditional method to find risk ratios since that was what the paper originally indicated. 
+The values I calculated for table 1 and table 4 (except the risk ratio column) are very close to the ones in the report. Most of them are only off by .1% or .2% which is likely just due to differences in rounding. However, the risk ratio column in table 4 that I calculated has more differences from the original paper. The values are off by no more than .15, and the confidence intervals are much smaller than in the original paper. I calculated the risk ratios by dividing the percentage of patients on digoxin that experienced each level of the variable (ejection fraction, previous digoxin use cause of heart failure, ct ratio, NYHA class) by the percentage of patients on the placebo that experienced that same level. I chose to do it this way because that is how a risk ratio is usually calculated by hand. The researchers said that they estimated the risk ratios from the Cox proportional-hazards model; however, I tried finding the risk ratios using the model output, and the values were very different from the ones in the paper since many were over 1. Calculating the risk ratios by hand and using the actual definition of risk ratios brought me closer than trying to estimate them from the model, so I chose hand calculation instead. I believe are differences are because the researchers were very unclear in the paper how they calculated their risk ratios. Because it was so vague, I struggled with finding the right calculations to give me the same output. Additionally, Professor Jiang mentioned that the paper used the term risk ratio which is not actually the right term for the calculations which leads to grater confusion. I couldn't figure out what other calculations/formulas the reserarchers were doing to get those number, so I just chose the traditional method to find risk ratios since that was what the paper originally indicated. 
