@@ -1,0 +1,697 @@
+---
+title: "case-01-ec-rmd"
+author: "Angela Wang"
+date: "February 26, 2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(MKinfer)
+library(survival)
+library(survminer)
+```
+
+```{r}
+data <- read_csv("data/dig.csv")
+
+dig <- data %>%
+  filter(TRTMT == 1)
+
+plac <- data %>%
+  filter(TRTMT == 0)
+```
+
+# Table 1 Values for Digoxin
+```{r}
+#mean and sd of age
+mean(dig$AGE)
+sd(dig$AGE)
+
+#mean and sd of ejection fraction
+mean(dig$EJF_PER)
+sd(dig$EJF_PER)
+
+#median duration of CHF
+dig %>%
+  filter(!is.na(CHFDUR)) %>%
+  summarise(med = median(CHFDUR))
+
+#prop female
+dig %>%
+  mutate(SEX = case_when(
+    SEX == 1 ~ "Male",
+    TRUE ~ "Female"
+  )) %>%
+  count(SEX) %>%
+  mutate(freq = round(n / nrow(dig),3)) %>%
+  filter(SEX =="Female") 
+
+#prop non-white
+dig %>%
+  mutate(RACE = case_when(
+    RACE == 1 ~ "White",
+    TRUE ~ "Non-white"
+  )) %>%
+  count(RACE) %>%
+  mutate(freq = round(n / nrow(dig),3)) %>%
+  filter(RACE =="Non-white")
+
+#prop older than 70
+dig %>%
+  filter(`AGE` > 70) %>%
+  nrow()/ nrow(dig) 
+
+#prop each method of assessing ejection fraction
+dig %>%
+  mutate(`EJFMETH` = case_when(
+    `EJFMETH` == 1 ~ "Radionuclide ventriculography",
+     `EJFMETH` == 2 ~ "Contrast angiography",
+     `EJFMETH` == 3 ~ "Two-dimensional echocardiography")) %>%
+  count(`EJFMETH`) %>%
+  group_by(`EJFMETH`) %>%
+  summarise(freq = round(n / nrow(dig),3))
+
+#prop cardiothoracic ratio
+dig %>%
+  filter(`CHESTX` > .55) %>%
+  nrow()/ nrow(dig)
+
+#prop NYHA class
+dig %>%
+  mutate(`FUNCTCLS` = case_when(
+    `FUNCTCLS` == 1 ~"I",
+    `FUNCTCLS` == 2 ~"II",
+    `FUNCTCLS` == 3 ~"III",
+    `FUNCTCLS` == 4~"IV")) %>%
+  count(`FUNCTCLS`) %>%
+  group_by(`FUNCTCLS`) %>%
+  summarise(freq = round(n / nrow(dig),3)) %>%
+  drop_na()
+
+#prop for each number of signs/symptoms
+dig %>% 
+  count(`NSYM`) %>%
+  group_by(`NSYM`) %>%
+  summarise(freq = round(n / nrow(dig),3)) 
+
+#prop previous myo infection
+dig %>%
+  count(`PREVMI`) %>%
+  group_by(`PREVMI`) %>%
+  summarise(freq = round(n / nrow(dig),3)) %>%
+  filter(`PREVMI` == 1) 
+
+#prop angina
+dig %>%
+  count(`ANGINA`) %>%
+  group_by(`ANGINA`) %>%
+  summarise(freq = round(n / nrow(dig),3)) %>%
+  filter(`ANGINA` == 1) 
+
+#prop diabetes
+dig %>%
+  count(`DIABETES`) %>%
+  group_by(`DIABETES`) %>%
+  summarise(freq = round(n / nrow(dig),3)) %>%
+  filter(`DIABETES` == 1) 
+
+#prop hypertension
+dig %>%
+  count(`HYPERTEN`) %>%
+  group_by(`HYPERTEN`) %>%
+  summarise(freq = round(n / nrow(dig),3)) %>%
+  filter(`HYPERTEN` == 1) 
+
+#prop previous digoxin use
+dig %>%
+  count(`DIGUSE`) %>%
+  group_by(`DIGUSE`) %>%
+  summarise(freq = round(n / nrow(dig),3)) %>%
+  filter(`DIGUSE` == 1) 
+
+#prop primary cause nonischemic or ischemic
+dig %>% 
+  mutate(`CHFETIOL_ni` = case_when(
+   `CHFETIOL` == 1 ~ "Ischemic",
+   TRUE ~ "Nonischemic")) %>%
+  count(`CHFETIOL_ni`) %>%
+  group_by(`CHFETIOL_ni`) %>%
+  summarise(freq = round(n / nrow(dig),3))
+
+#prop primary cause within nonischemic 
+dig %>% 
+  mutate(`CHFETIOL` = case_when(
+    `CHFETIOL` == 3 |`CHFETIOL`== 6 |`CHFETIOL`== 5 ~ "Other",
+    `CHFETIOL` == 1 ~ "Ischemic",
+    `CHFETIOL` == 2 ~ "Hypertensive",
+    `CHFETIOL` == 4 ~ "Idiopathic")) %>%
+  count(`CHFETIOL`) %>%
+  group_by(`CHFETIOL`) %>%
+  summarise(freq = (n / nrow(dig))) %>%
+  drop_na()
+
+#prop diuretics
+dig %>% 
+  mutate(`diurets` = case_when(
+   `DIURET` == 1 | `DIURETK` == 1 ~ "Diuretics")) %>%
+  count(`diurets`) %>%
+  group_by(`diurets`) %>%
+  summarise(freq = round(n / nrow(dig),3)) %>%
+  filter(diurets == "Diuretics")
+
+#prop ace inhibitor
+dig %>%
+  count(`ACEINHIB`) %>%
+  group_by(`ACEINHIB`) %>%
+  summarise(freq = round(n / nrow(dig),3)) %>%
+  filter(`ACEINHIB` == 1) 
+
+#prop nitrates
+dig %>%
+  count(`NITRATES`) %>%
+  group_by(`NITRATES`) %>%
+  summarise(freq = round(n / nrow(dig),3)) %>%
+  filter(`NITRATES` == 1) 
+
+#prop other vasodilators
+dig %>%
+  count(`VASOD`) %>%
+  group_by(`VASOD`) %>%
+  summarise(freq = round(n / nrow(dig),3)) %>%
+  filter(`VASOD` == 1) 
+
+#prop daily dose 
+dig %>%
+  filter(`DIGDOSE` %in% c(0.125, 0.250, 0.375, 0.500)) %>%
+  count(`DIGDOSE`) %>%
+  group_by(`DIGDOSE`) %>%
+  summarise(freq = (n / nrow(dig)))
+```
+
+# Table 1 Values for Placebo
+```{r}
+#mean and sd of age
+mean(plac$AGE)
+sd(plac$AGE)
+
+#mean and sd of ejection fraction
+mean(plac$EJF_PER)
+sd(plac$EJF_PER)
+
+#median duration of CHF
+plac %>%
+  filter(!is.na(CHFDUR)) %>%
+  summarise(med = median(CHFDUR))
+
+#prop female
+plac %>%
+  mutate(SEX = case_when(
+    SEX == 1 ~ "Male",
+    TRUE ~ "Female"
+  )) %>%
+  count(SEX) %>%
+  mutate(freq = round(n / nrow(plac),3)) %>%
+  filter(SEX =="Female") 
+
+#prop non-white
+plac %>%
+  mutate(RACE = case_when(
+    RACE == 1 ~ "White",
+    TRUE ~ "Non-white"
+  )) %>%
+  count(RACE) %>%
+  mutate(freq = round(n / nrow(plac),3)) %>%
+  filter(RACE =="Non-white")
+
+#prop older than 70
+plac %>%
+  filter(`AGE` > 70) %>%
+  nrow()/ nrow(plac) 
+
+#prop each method of assessing ejection fraction
+plac %>%
+  mutate(`EJFMETH` = case_when(
+    `EJFMETH` == 1 ~ "Radionuclide ventriculography",
+     `EJFMETH` == 2 ~ "Contrast angiography",
+     `EJFMETH` == 3 ~ "Two-dimensional echocardiography")) %>%
+  count(`EJFMETH`) %>%
+  group_by(`EJFMETH`) %>%
+  summarise(freq = round(n / nrow(plac),3))
+
+#prop cardiothoracic ratio
+plac %>%
+  filter(`CHESTX` > .55) %>%
+  nrow()/ nrow(plac)
+
+#prop NYHA class
+plac %>%
+  mutate(`FUNCTCLS` = case_when(
+    `FUNCTCLS` == 1 ~"I",
+    `FUNCTCLS` == 2 ~"II",
+    `FUNCTCLS` == 3 ~"III",
+    `FUNCTCLS` == 4~"IV")) %>%
+  count(`FUNCTCLS`) %>%
+  group_by(`FUNCTCLS`) %>%
+  summarise(freq = round(n / nrow(plac),3)) %>%
+  drop_na()
+
+#prop for each number of signs/symptoms
+plac %>% 
+  count(`NSYM`) %>%
+  group_by(`NSYM`) %>%
+  summarise(freq = round(n / nrow(plac),3)) 
+
+#prop previous myo infection
+plac %>%
+  count(`PREVMI`) %>%
+  group_by(`PREVMI`) %>%
+  summarise(freq = round(n / nrow(plac),3)) %>%
+  filter(`PREVMI` == 1) 
+
+#prop angina
+plac %>%
+  count(`ANGINA`) %>%
+  group_by(`ANGINA`) %>%
+  summarise(freq = round(n / nrow(plac),3)) %>%
+  filter(`ANGINA` == 1) 
+
+#prop diabetes
+plac %>%
+  count(`DIABETES`) %>%
+  group_by(`DIABETES`) %>%
+  summarise(freq = round(n / nrow(plac),3)) %>%
+  filter(`DIABETES` == 1) 
+
+#prop hypertension
+plac %>%
+  count(`HYPERTEN`) %>%
+  group_by(`HYPERTEN`) %>%
+  summarise(freq = round(n / nrow(plac),3)) %>%
+  filter(`HYPERTEN` == 1) 
+
+#prop previous digoxin use
+dig %>%
+  count(`DIGUSE`) %>%
+  group_by(`DIGUSE`) %>%
+  summarise(freq = round(n / nrow(dig),3)) %>%
+  filter(`DIGUSE` == 1) 
+
+#prop primary cause nonischemic or ischemic
+plac %>% 
+  mutate(`CHFETIOL_ni` = case_when(
+   `CHFETIOL` == 1 ~ "Ischemic",
+   TRUE ~ "Nonischemic")) %>%
+  count(`CHFETIOL_ni`) %>%
+  group_by(`CHFETIOL_ni`) %>%
+  summarise(freq = round(n / nrow(plac),3))
+
+#prop primary cause within nonischemic 
+plac %>% 
+  mutate(`CHFETIOL` = case_when(
+    `CHFETIOL` == 3 |`CHFETIOL`== 6 |`CHFETIOL`== 5 ~ "Other",
+    `CHFETIOL` == 1 ~ "Ischemic",
+    `CHFETIOL` == 2 ~ "Hypertensive",
+    `CHFETIOL` == 4 ~ "Idiopathic")) %>%
+  count(`CHFETIOL`) %>%
+  group_by(`CHFETIOL`) %>%
+  summarise(freq = (n / nrow(plac))) %>%
+  drop_na()
+
+#prop diuretics
+plac %>% 
+  mutate(`diurets` = case_when(
+   `DIURET` == 1 | `DIURETK` == 1 ~ "Diuretics")) %>%
+  count(`diurets`) %>%
+  group_by(`diurets`) %>%
+  summarise(freq = round(n / nrow(plac),3)) %>%
+  filter(diurets == "Diuretics")
+
+#prop ace inhibitor
+plac %>%
+  count(`ACEINHIB`) %>%
+  group_by(`ACEINHIB`) %>%
+  summarise(freq = round(n / nrow(plac),3)) %>%
+  filter(`ACEINHIB` == 1) 
+
+#prop nitrates
+plac %>%
+  count(`NITRATES`) %>%
+  group_by(`NITRATES`) %>%
+  summarise(freq = round(n / nrow(plac),3)) %>%
+  filter(`NITRATES` == 1) 
+
+#prop other vasodilators
+plac %>%
+  count(`VASOD`) %>%
+  group_by(`VASOD`) %>%
+  summarise(freq = round(n / nrow(plac),3)) %>%
+  filter(`VASOD` == 1) 
+
+#prop daily dose 
+plac %>%
+  filter(`DIGDOSE` %in% c(0.125, 0.250, 0.375, 0.500)) %>%
+  count(`DIGDOSE`) %>%
+  group_by(`DIGDOSE`) %>%
+  summarise(freq = (n / nrow(plac)))
+```
+
+#Table 4 Digoxin Values
+
+```{r}
+#ejection fraction .25-.45
+dig %>%
+  filter(`EJF_PER` >= 25 & `EJF_PER` <= 45) %>%
+  count(`DWHF`) %>%
+  mutate(freq= round(n/sum(n),3)) %>%
+  filter(DWHF == 1)
+
+#ejection fraction < .25
+dig %>%
+  filter(`EJF_PER` < 25) %>%
+  count(`DWHF`) %>%
+  mutate(freq= round(n/sum(n),3)) %>%
+  filter(DWHF == 1)
+
+#previous use of digoxin
+dig %>%
+  group_by(DIGUSE) %>%
+  count(`DWHF`) %>%
+  mutate(freq= round(n/sum(n),3)) %>%
+  filter(DWHF == 1)
+
+#cause of heart failure
+dig %>%
+  mutate(`CHFETIOL_ni` = case_when(
+   `CHFETIOL` == 1 ~ "Ischemic",
+   TRUE ~ "Nonischemic")) %>%
+  group_by(CHFETIOL_ni) %>%
+  count(`DWHF`) %>%
+  mutate(freq= round(n/sum(n),3)) %>%
+  filter(DWHF == 1)
+
+#cardiothoracic ratio <= .55
+dig %>%
+  filter(`CHESTX` <= .55) %>%
+  count(`DWHF`) %>%
+  mutate(freq= round(n/sum(n),3)) %>%
+  filter(DWHF == 1)
+
+#cardiothoracic ratio > .55
+dig %>%
+  filter(`CHESTX` > .55) %>%
+  count(`DWHF`) %>%
+  mutate(freq= round(n/sum(n),3)) %>%
+  filter(DWHF == 1)
+
+#nyha class
+dig %>%
+  mutate(`FUNCTCLS` = case_when(
+   `FUNCTCLS` == 1 | `FUNCTCLS` == 2 ~ "1 or 2",
+   TRUE ~ "3 or 4")) %>%
+  group_by(FUNCTCLS) %>%
+  count(`DWHF`) %>%
+  mutate(freq= round(n/sum(n),3)) %>%
+  filter(DWHF == 1)
+
+#overall study
+dig %>%
+  count(`DWHF`) %>%
+  mutate(freq= round(n/sum(n),3)) %>%
+  filter(DWHF == 1)
+```
+
+#Table 4 Placebo Values 
+```{r}
+#ejection fraction .25-.45
+plac %>%
+  filter(`EJF_PER` >= 25 & `EJF_PER` <= 45) %>%
+  count(`DWHF`) %>%
+  mutate(freq= round(n/sum(n),3)) %>%
+  filter(DWHF == 1)
+
+#ejection fraction <.25
+plac %>%
+  filter(`EJF_PER` < 25) %>%
+  count(`DWHF`) %>%
+  mutate(freq= round(n/sum(n),3)) %>%
+  filter(DWHF == 1)
+
+#previous use of digoxin
+plac %>%
+  group_by(DIGUSE) %>%
+  count(`DWHF`) %>%
+  mutate(freq= round(n/sum(n),3)) %>%
+  filter(DWHF == 1)
+
+#cause of heart failure
+plac %>%
+  mutate(`CHFETIOL_ni` = case_when(
+   `CHFETIOL` == 1 ~ "Ischemic",
+   TRUE ~ "Nonischemic")) %>%
+  group_by(CHFETIOL_ni) %>%
+  count(`DWHF`) %>%
+  mutate(freq= round(n/sum(n),3)) %>%
+  filter(DWHF == 1)
+
+#cardiothoracic ratio <= .55
+plac %>%
+  filter(`CHESTX` <= .55) %>%
+  count(`DWHF`) %>%
+  mutate(freq= round(n/sum(n),3)) %>%
+  filter(DWHF == 1)
+
+#cardiothoracic ratio > .55
+plac %>%
+  filter(`CHESTX` > .55) %>%
+  count(`DWHF`) %>%
+  mutate(freq= round(n/sum(n),3)) %>%
+  filter(DWHF == 1)
+
+#nyha class
+plac %>%
+  mutate(`FUNCTCLS` = case_when(
+   `FUNCTCLS` == 1 | `FUNCTCLS` == 2 ~ "1 or 2",
+   TRUE ~ "3 or 4")) %>%
+  group_by(FUNCTCLS) %>%
+  count(`DWHF`) %>%
+  mutate(freq= round(n/sum(n),3)) %>%
+  filter(DWHF == 1)
+
+#overall study
+plac %>%
+  count(`DWHF`) %>%
+  mutate(freq= round(n/sum(n),3)) %>%
+  filter(DWHF == 1)
+```
+
+#Table 4: Absolute Difference 
+```{r}
+#absolute dif ejection fraction .25-.45
+dif1 = (613/2270) - (735/2273)
+result1 = prop.test(x = c(613,735), n=c(2270,2273), conf.level =.95, correct = FALSE)
+x1 = result1$conf.int
+print(round(dif1,3))
+print(round(x1,3))
+
+#absolute dif ejection fraction <.25
+dif2 = (428/1127) - (556/1130)
+result2 = prop.test(x = c(428,556), n=c(1127,1130), conf.level =.95, correct = FALSE)
+x2 = result2$conf.int
+print(round(dif2,3))
+print(round(x2,3))
+```
+
+```{r}
+#absolute dif previous digoxin use = yes
+dif1 = (550/1498) - (688/1519)
+result1 = prop.test(x = c(550,688), n=c(1498,1519), conf.level =.95, correct = FALSE)
+x1 = result1$conf.int
+print(round(dif1,3))
+print(round(x1,3))
+
+#absolute dif previous digoxin use = no
+dif2 = (491/1899) - (603/1884)
+result2 = prop.test(x = c(491,603), n=c(1899,1884), conf.level =.95, correct = FALSE)
+x2 = result2$conf.int
+print(round(dif2,3))
+print(round(x2,3))
+```
+
+```{r}
+#absolute dif cause of heart failure = ischemic
+dif1 = (731/2405) - (873/2398)
+result1 = prop.test(x = c(731,873), n=c(2405,2389), conf.level =.95, correct = FALSE)
+x1 = result1$conf.int
+print(round(dif1,3))
+print(round(x1,3))
+
+#absolute dif cause of heart failure = nonischemic
+dif2 = (306/983) - (413/996)
+result2 = prop.test(x = c(306,413), n=c(983,996), conf.level =.95, correct = FALSE)
+x2 = result2$conf.int
+print(round(dif2,3))
+print(round(x2,3))
+```
+
+```{r}
+#absolute dif ct ratio <= .55
+dif1 = (600/2220) - (724/2233)
+result1 = prop.test(x = c(600,724), n=c(2220,2233), conf.level =.95, correct = FALSE)
+x1 = result1$conf.int
+print(round(dif1,3))
+print(round(x1,3))
+
+#absolute dif ct ratio > .55
+dif2 = (441/1176) - (567/1170)
+result2 = prop.test(x = c(441,567), n=c(1176,1170), conf.level =.95, correct = FALSE)
+x2 = result2$conf.int
+print(round(dif2,3))
+print(round(x2,3))
+```
+
+```{r}
+#absolute dif nyha class = 1 or 2
+dif1 = (601/2275) - (739/2296)
+result1 = prop.test(x = c(601,739), n=c(2275,2296), conf.level =.95, correct = FALSE)
+x1 = result1$conf.int
+print(round(dif1,3))
+print(round(x1,3))
+
+#absolute dif nyha class = 3 or 4
+dif2 = (438/1118) - (552/1105)
+result2 = prop.test(x = c(438,552), n=c(1118,1105), conf.level =.95, correct = FALSE)
+x2 = result2$conf.int
+print(round(dif2,3))
+print(round(x2,3))
+```
+
+```{r}
+#absolute dif overall pop
+dif = (1041/3397) - (1291/3403)
+result = prop.test(x = c(1041,1291), n=c(3397,3403), conf.level =.95, correct = FALSE)
+x = result$conf.int
+print(round(dif,3))
+print(round(x,3))
+```
+
+#Table 4: Risk Ratio
+```{r}
+#risk ratio ejection fraction .25-.45
+ratio1 = (613/2270) / (735/2273)
+result1 = prop.test(x = 613*2273,n = 2270*735, conf.level =.95, correct=FALSE)
+x1 = result1$conf.int
+print(round(ratio1,3))
+print(round(x1,3))
+
+#risk ratio ejection fraction <.25
+ratio2 = (428/1127) / (556/1130)
+result2 = prop.test(x = 428*1130,n = 1127*556, conf.level =.95, correct=FALSE)
+x2 = result2$conf.int
+print(round(ratio2,3))
+print(round(x2,3))
+```
+
+```{r}
+#risk ratio prev digoxin use = yes
+ratio1 = (550/1498) / (688/1519)
+result1 = prop.test(x = 550*1519,n = 1498*688, conf.level =.95, correct=FALSE)
+x1 = result1$conf.int
+print(round(ratio1,3))
+print(round(x1,3))
+
+#risk ratio prev digoxin use = no
+ratio2 = (491/1899) / (603/1884)
+result2 = prop.test(x = 491*1884,n = 1899*603, conf.level =.95, correct=FALSE)
+x2 = result2$conf.int
+print(round(ratio2,3))
+print(round(x2,3))
+```
+
+```{r}
+#risk ratio cause of heart failure = ischemic
+ratio1 = (731/2405) / (873/2398)
+result1 = prop.test(x = 731*2398,n = 2405*873, conf.level =.95, correct=FALSE)
+x1 = result1$conf.int
+print(round(ratio1,3))
+print(round(x1,3))
+
+#risk ratio cause of heart failure = nonischemic
+ratio2 = (306/983) / (413/996)
+result2 = prop.test(x = 306*996,n = 983*413, conf.level =.95, correct=FALSE)
+x2 = result2$conf.int
+print(round(ratio2,3))
+print(round(x2,3))
+```
+
+```{r}
+#risk ratio ct ratio <= .55
+ratio1 = (600/2270) / (724/2233)
+result1 = prop.test(x = 600*2233,n = 2270*724, conf.level =.95, correct=FALSE)
+x1 = result1$conf.int
+print(round(ratio1,3))
+print(round(x1,3))
+
+#risk ratio ct ratio > .55
+ratio2 = (441/1176) / (567/1170)
+result2 = prop.test(x = 441*1170,n = 1176*567, conf.level =.95, correct=FALSE)
+x2 = result2$conf.int
+print(round(ratio2,3))
+print(round(x2,3))
+```
+
+```{r}
+#risk ratio nyha = 1 or 2
+ratio1 = (601/2275) / (739/2296)
+result1 = prop.test(x = 601*2296,n = 2275*739, conf.level =.95, correct=FALSE)
+x1 = result1$conf.int
+print(round(ratio1,3))
+print(round(x1,3))
+
+#risk ratio nyha = 3 or 4
+ratio2 = (438/1118) / (552/1105)
+result2 = prop.test(x = 438*1105,n = 1118*552, conf.level =.95, correct=FALSE)
+x2 = result2$conf.int
+print(round(ratio2,3))
+print(round(x2,3))
+```
+
+```{r}
+#risk ratio overall pop
+ratio = (1041/3397) / (1291/3403)
+result = prop.test(x = 1041*3403, n= 3397*1291, conf.level =.95, correct = FALSE)
+x = result$conf.int
+print(round(ratio,3))
+print(round(x,3))
+```
+
+
+```{r, include = FALSE}
+data2 <- data %>%
+  mutate(EJF_PER = case_when(
+    EJF_PER >= 25 & EJF_PER <= 45 ~ ".25-.45",
+    EJF_PER < 25 ~ "<.25")) %>%
+  mutate(`CHFETIOL` = case_when(
+    `CHFETIOL` == 1 ~ "Ischemic",
+    TRUE ~ "Nonischemic")) %>% 
+  mutate(CHESTX= case_when(
+    CHESTX <= .55 ~ "<=.55",
+    TRUE ~ ">.55")) %>%
+  mutate(FUNCTCLS = case_when(
+    FUNCTCLS== 1 | FUNCTCLS == 2 ~ "1 or 2",
+    TRUE ~ "3 or 4"))
+
+coxm1 <- coxph(Surv(DWHFDAYS, DWHF) ~ TRTMT + EJF_PER + CHFETIOL + CHESTX + FUNCTCLS, data = data2)
+
+summary(coxm1)
+```
+
+
+#Discussion
+The values I calculated for table 1 and table 4 (except the risk ratio column) are very close to the ones in the report. Most of them are only off by .1% which is likely just due to differences in rounding. However, the risk ratio column in table 4 that I calculated has more differences from the original paper. The values are off by no more than .15, and the confidence intervals are much smaller than in the original paper. I calculated the risk ratios by dividing the percentage of patients on digoxin that experienced each level of the variable (ejection fraction, previous digoxin use cause of heart failure, ct ratio, NYHA class) by the percentage of patients on the placebo that experienced that same level. I chose to do it this way because that is how a risk ratio is usually calculated by hand. The researchers said that they estimated the risk ratios from the Cox proportional-hazards model; however, I tried finding the risk ratios using the model output, and the values were very different from the ones in the paper since many were over 1. Calculating the risk ratios by hand and using the actual definition of risk ratios brought me closer than trying to estimate them from the model, so I chose hand calculation instead. I believe are differences are because the researchers were very unclear in the paper how they calculated their risk ratios. Because it was so vague, I struggled with finding the right calculations to give me the same output. Additionally, Professor Jiang mentioned that the paper used the term risk ratio which is not actually the right term for the calculations which leads to grater confusion. I couldn't figure out what other calculations/formulas the reserarchers were doing to get those number, so I just chose the traditional method to find risk ratios since that was what the paper originally indicated. 
