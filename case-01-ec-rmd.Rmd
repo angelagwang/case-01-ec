@@ -6,7 +6,7 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
 
 ```{r}
@@ -29,21 +29,29 @@ plac <- data %>%
 ```
 
 # Table 1 Values for Digoxin
+
+mean and sd of age
 ```{r}
-#mean and sd of age
+
 mean(dig$AGE)
 sd(dig$AGE)
+```
 
-#mean and sd of ejection fraction
+mean and sd of ejection fraction
+```{r}
 mean(dig$EJF_PER)
 sd(dig$EJF_PER)
+```
 
-#median duration of CHF
+median duration of CHF
+```{r}
 dig %>%
   filter(!is.na(CHFDUR)) %>%
   summarise(med = median(CHFDUR))
+```
 
-#prop female
+prop female
+```{r}
 dig %>%
   mutate(SEX = case_when(
     SEX == 1 ~ "Male",
@@ -52,8 +60,10 @@ dig %>%
   count(SEX) %>%
   mutate(freq = round(n / nrow(dig),3)) %>%
   filter(SEX =="Female") 
+```
 
-#prop non-white
+prop non-white
+```{r}
 dig %>%
   mutate(RACE = case_when(
     RACE == 1 ~ "White",
@@ -62,13 +72,17 @@ dig %>%
   count(RACE) %>%
   mutate(freq = round(n / nrow(dig),3)) %>%
   filter(RACE =="Non-white")
+```
 
-#prop older than 70
+prop older than 70
+```{r}
 dig %>%
   filter(`AGE` > 70) %>%
   nrow()/ nrow(dig) 
+```
 
-#prop each method of assessing ejection fraction
+prop each method of assessing ejection fraction
+```{r}
 dig %>%
   mutate(`EJFMETH` = case_when(
     `EJFMETH` == 1 ~ "Radionuclide ventriculography",
@@ -77,13 +91,17 @@ dig %>%
   count(`EJFMETH`) %>%
   group_by(`EJFMETH`) %>%
   summarise(freq = round(n / nrow(dig),3))
-
-#prop cardiothoracic ratio
+```
+  
+prop cardiothoracic ratio
+```{r}
 dig %>%
   filter(`CHESTX` > .55) %>%
   nrow()/ nrow(dig)
+```
 
-#prop NYHA class
+prop NYHA class
+```{r}
 dig %>%
   mutate(`FUNCTCLS` = case_when(
     `FUNCTCLS` == 1 ~"I",
@@ -94,49 +112,63 @@ dig %>%
   group_by(`FUNCTCLS`) %>%
   summarise(freq = round(n / nrow(dig),3)) %>%
   drop_na()
+```
 
-#prop for each number of signs/symptoms
+prop for each number of signs/symptoms
+```{r}
 dig %>% 
   count(`NSYM`) %>%
   group_by(`NSYM`) %>%
   summarise(freq = round(n / nrow(dig),3)) 
+```
 
-#prop previous myo infection
+prop previous myo infection
+```{r}
 dig %>%
   count(`PREVMI`) %>%
   group_by(`PREVMI`) %>%
   summarise(freq = round(n / nrow(dig),3)) %>%
   filter(`PREVMI` == 1) 
+```
 
-#prop angina
+prop angina
+```{r}
 dig %>%
   count(`ANGINA`) %>%
   group_by(`ANGINA`) %>%
   summarise(freq = round(n / nrow(dig),3)) %>%
-  filter(`ANGINA` == 1) 
+  filter(`ANGINA` == 1)
+```
 
-#prop diabetes
+prop diabetes
+```{r}
 dig %>%
   count(`DIABETES`) %>%
   group_by(`DIABETES`) %>%
   summarise(freq = round(n / nrow(dig),3)) %>%
   filter(`DIABETES` == 1) 
+```
 
-#prop hypertension
+prop hypertension
+```{r}
 dig %>%
   count(`HYPERTEN`) %>%
   group_by(`HYPERTEN`) %>%
   summarise(freq = round(n / nrow(dig),3)) %>%
   filter(`HYPERTEN` == 1) 
+```
 
-#prop previous digoxin use
+prop previous digoxin use
+```{r}
 dig %>%
   count(`DIGUSE`) %>%
   group_by(`DIGUSE`) %>%
   summarise(freq = round(n / nrow(dig),3)) %>%
   filter(`DIGUSE` == 1) 
+```
 
-#prop primary cause nonischemic or ischemic
+prop primary cause nonischemic or ischemic
+```{r}
 dig %>% 
   mutate(`CHFETIOL_ni` = case_when(
    `CHFETIOL` == 1 ~ "Ischemic",
@@ -144,8 +176,10 @@ dig %>%
   count(`CHFETIOL_ni`) %>%
   group_by(`CHFETIOL_ni`) %>%
   summarise(freq = round(n / nrow(dig),3))
+```
 
-#prop primary cause within nonischemic 
+prop primary cause within nonischemic 
+```{r}
 dig %>% 
   mutate(`CHFETIOL` = case_when(
     `CHFETIOL` == 3 |`CHFETIOL`== 6 |`CHFETIOL`== 5 ~ "Other",
@@ -156,8 +190,10 @@ dig %>%
   group_by(`CHFETIOL`) %>%
   summarise(freq = (n / nrow(dig))) %>%
   drop_na()
+```
 
-#prop diuretics
+prop diuretics
+```{r}
 dig %>% 
   mutate(`diurets` = case_when(
    `DIURET` == 1 | `DIURETK` == 1 ~ "Diuretics")) %>%
@@ -165,29 +201,37 @@ dig %>%
   group_by(`diurets`) %>%
   summarise(freq = round(n / nrow(dig),3)) %>%
   filter(diurets == "Diuretics")
+```
 
-#prop ace inhibitor
+prop ace inhibitor
+```{r}
 dig %>%
   count(`ACEINHIB`) %>%
   group_by(`ACEINHIB`) %>%
   summarise(freq = round(n / nrow(dig),3)) %>%
   filter(`ACEINHIB` == 1) 
+```
 
-#prop nitrates
+prop nitrates
+```{r}
 dig %>%
   count(`NITRATES`) %>%
   group_by(`NITRATES`) %>%
   summarise(freq = round(n / nrow(dig),3)) %>%
   filter(`NITRATES` == 1) 
+```
 
-#prop other vasodilators
+prop other vasodilators
+```{r}
 dig %>%
   count(`VASOD`) %>%
   group_by(`VASOD`) %>%
   summarise(freq = round(n / nrow(dig),3)) %>%
   filter(`VASOD` == 1) 
+```
 
-#prop daily dose 
+prop daily dose 
+```{r}
 dig %>%
   filter(`DIGDOSE` %in% c(0.125, 0.250, 0.375, 0.500)) %>%
   count(`DIGDOSE`) %>%
@@ -195,22 +239,30 @@ dig %>%
   summarise(freq = (n / nrow(dig)))
 ```
 
+
 # Table 1 Values for Placebo
+
+mean and sd of age
 ```{r}
-#mean and sd of age
 mean(plac$AGE)
 sd(plac$AGE)
+```
 
-#mean and sd of ejection fraction
+mean and sd of ejection fraction
+```{r}
 mean(plac$EJF_PER)
 sd(plac$EJF_PER)
+```
 
-#median duration of CHF
+median duration of CHF
+```{r}
 plac %>%
   filter(!is.na(CHFDUR)) %>%
   summarise(med = median(CHFDUR))
+```
 
-#prop female
+prop female
+```{r}
 plac %>%
   mutate(SEX = case_when(
     SEX == 1 ~ "Male",
@@ -219,8 +271,10 @@ plac %>%
   count(SEX) %>%
   mutate(freq = round(n / nrow(plac),3)) %>%
   filter(SEX =="Female") 
+```
 
-#prop non-white
+prop non-white
+```{r}
 plac %>%
   mutate(RACE = case_when(
     RACE == 1 ~ "White",
@@ -229,13 +283,17 @@ plac %>%
   count(RACE) %>%
   mutate(freq = round(n / nrow(plac),3)) %>%
   filter(RACE =="Non-white")
+```
 
-#prop older than 70
+prop older than 70
+```{r}
 plac %>%
   filter(`AGE` > 70) %>%
   nrow()/ nrow(plac) 
+```
 
-#prop each method of assessing ejection fraction
+prop each method of assessing ejection fraction
+```{r}
 plac %>%
   mutate(`EJFMETH` = case_when(
     `EJFMETH` == 1 ~ "Radionuclide ventriculography",
@@ -244,13 +302,17 @@ plac %>%
   count(`EJFMETH`) %>%
   group_by(`EJFMETH`) %>%
   summarise(freq = round(n / nrow(plac),3))
-
-#prop cardiothoracic ratio
+```
+  
+prop cardiothoracic ratio
+```{r}
 plac %>%
   filter(`CHESTX` > .55) %>%
   nrow()/ nrow(plac)
+```
 
-#prop NYHA class
+prop NYHA class
+```{r}
 plac %>%
   mutate(`FUNCTCLS` = case_when(
     `FUNCTCLS` == 1 ~"I",
@@ -261,49 +323,63 @@ plac %>%
   group_by(`FUNCTCLS`) %>%
   summarise(freq = round(n / nrow(plac),3)) %>%
   drop_na()
+```
 
-#prop for each number of signs/symptoms
+prop for each number of signs/symptoms
+```{r}
 plac %>% 
   count(`NSYM`) %>%
   group_by(`NSYM`) %>%
   summarise(freq = round(n / nrow(plac),3)) 
+```
 
-#prop previous myo infection
+prop previous myo infection
+```{r}
 plac %>%
   count(`PREVMI`) %>%
   group_by(`PREVMI`) %>%
   summarise(freq = round(n / nrow(plac),3)) %>%
   filter(`PREVMI` == 1) 
+```
 
-#prop angina
+prop angina
+```{r}
 plac %>%
   count(`ANGINA`) %>%
   group_by(`ANGINA`) %>%
   summarise(freq = round(n / nrow(plac),3)) %>%
-  filter(`ANGINA` == 1) 
+  filter(`ANGINA` == 1)
+```
 
-#prop diabetes
+prop diabetes
+```{r}
 plac %>%
   count(`DIABETES`) %>%
   group_by(`DIABETES`) %>%
   summarise(freq = round(n / nrow(plac),3)) %>%
   filter(`DIABETES` == 1) 
+```
 
-#prop hypertension
+prop hypertension
+```{r}
 plac %>%
   count(`HYPERTEN`) %>%
   group_by(`HYPERTEN`) %>%
   summarise(freq = round(n / nrow(plac),3)) %>%
   filter(`HYPERTEN` == 1) 
+```
 
-#prop previous digoxin use
-dig %>%
+prop previous digoxin use
+```{r}
+plac %>%
   count(`DIGUSE`) %>%
   group_by(`DIGUSE`) %>%
-  summarise(freq = round(n / nrow(dig),3)) %>%
+  summarise(freq = round(n / nrow(plac),3)) %>%
   filter(`DIGUSE` == 1) 
+```
 
-#prop primary cause nonischemic or ischemic
+prop primary cause nonischemic or ischemic
+```{r}
 plac %>% 
   mutate(`CHFETIOL_ni` = case_when(
    `CHFETIOL` == 1 ~ "Ischemic",
@@ -311,8 +387,10 @@ plac %>%
   count(`CHFETIOL_ni`) %>%
   group_by(`CHFETIOL_ni`) %>%
   summarise(freq = round(n / nrow(plac),3))
+```
 
-#prop primary cause within nonischemic 
+prop primary cause within nonischemic 
+```{r}
 plac %>% 
   mutate(`CHFETIOL` = case_when(
     `CHFETIOL` == 3 |`CHFETIOL`== 6 |`CHFETIOL`== 5 ~ "Other",
@@ -323,8 +401,10 @@ plac %>%
   group_by(`CHFETIOL`) %>%
   summarise(freq = (n / nrow(plac))) %>%
   drop_na()
+```
 
-#prop diuretics
+prop diuretics
+```{r}
 plac %>% 
   mutate(`diurets` = case_when(
    `DIURET` == 1 | `DIURETK` == 1 ~ "Diuretics")) %>%
@@ -332,29 +412,37 @@ plac %>%
   group_by(`diurets`) %>%
   summarise(freq = round(n / nrow(plac),3)) %>%
   filter(diurets == "Diuretics")
+```
 
-#prop ace inhibitor
+prop ace inhibitor
+```{r}
 plac %>%
   count(`ACEINHIB`) %>%
   group_by(`ACEINHIB`) %>%
   summarise(freq = round(n / nrow(plac),3)) %>%
   filter(`ACEINHIB` == 1) 
+```
 
-#prop nitrates
+prop nitrates
+```{r}
 plac %>%
   count(`NITRATES`) %>%
   group_by(`NITRATES`) %>%
   summarise(freq = round(n / nrow(plac),3)) %>%
   filter(`NITRATES` == 1) 
+```
 
-#prop other vasodilators
+prop other vasodilators
+```{r}
 plac %>%
   count(`VASOD`) %>%
   group_by(`VASOD`) %>%
   summarise(freq = round(n / nrow(plac),3)) %>%
   filter(`VASOD` == 1) 
+```
 
-#prop daily dose 
+prop daily dose 
+```{r}
 plac %>%
   filter(`DIGDOSE` %in% c(0.125, 0.250, 0.375, 0.500)) %>%
   count(`DIGDOSE`) %>%
@@ -364,29 +452,35 @@ plac %>%
 
 #Table 4 Digoxin Values
 
+ejection fraction .25-.45
 ```{r}
-#ejection fraction .25-.45
 dig %>%
   filter(`EJF_PER` >= 25 & `EJF_PER` <= 45) %>%
   count(`DWHF`) %>%
   mutate(freq= round(n/sum(n),3)) %>%
   filter(DWHF == 1)
+```
 
-#ejection fraction < .25
+ejection fraction < .25
+```{r}
 dig %>%
   filter(`EJF_PER` < 25) %>%
   count(`DWHF`) %>%
   mutate(freq= round(n/sum(n),3)) %>%
   filter(DWHF == 1)
+```
 
-#previous use of digoxin
+previous use of digoxin
+```{r}
 dig %>%
   group_by(DIGUSE) %>%
   count(`DWHF`) %>%
   mutate(freq= round(n/sum(n),3)) %>%
   filter(DWHF == 1)
+```
 
-#cause of heart failure
+cause of heart failure
+```{r}
 dig %>%
   mutate(`CHFETIOL_ni` = case_when(
    `CHFETIOL` == 1 ~ "Ischemic",
@@ -395,22 +489,28 @@ dig %>%
   count(`DWHF`) %>%
   mutate(freq= round(n/sum(n),3)) %>%
   filter(DWHF == 1)
+```
 
-#cardiothoracic ratio <= .55
+cardiothoracic ratio <= .55
+```{r}
 dig %>%
   filter(`CHESTX` <= .55) %>%
   count(`DWHF`) %>%
   mutate(freq= round(n/sum(n),3)) %>%
   filter(DWHF == 1)
+```
 
-#cardiothoracic ratio > .55
+cardiothoracic ratio > .55
+```{r}
 dig %>%
   filter(`CHESTX` > .55) %>%
   count(`DWHF`) %>%
   mutate(freq= round(n/sum(n),3)) %>%
   filter(DWHF == 1)
+```
 
-#nyha class
+nyha class
+```{r}
 dig %>%
   mutate(`FUNCTCLS` = case_when(
    `FUNCTCLS` == 1 | `FUNCTCLS` == 2 ~ "1 or 2",
@@ -419,8 +519,10 @@ dig %>%
   count(`DWHF`) %>%
   mutate(freq= round(n/sum(n),3)) %>%
   filter(DWHF == 1)
+```
 
-#overall study
+overall study
+```{r}
 dig %>%
   count(`DWHF`) %>%
   mutate(freq= round(n/sum(n),3)) %>%
@@ -428,29 +530,36 @@ dig %>%
 ```
 
 #Table 4 Placebo Values 
+
+ejection fraction .25-.45
 ```{r}
-#ejection fraction .25-.45
 plac %>%
   filter(`EJF_PER` >= 25 & `EJF_PER` <= 45) %>%
   count(`DWHF`) %>%
   mutate(freq= round(n/sum(n),3)) %>%
   filter(DWHF == 1)
+```
 
-#ejection fraction <.25
+ejection fraction < .25
+```{r}
 plac %>%
   filter(`EJF_PER` < 25) %>%
   count(`DWHF`) %>%
   mutate(freq= round(n/sum(n),3)) %>%
   filter(DWHF == 1)
+```
 
-#previous use of digoxin
+previous use of digoxin
+```{r}
 plac %>%
   group_by(DIGUSE) %>%
   count(`DWHF`) %>%
   mutate(freq= round(n/sum(n),3)) %>%
   filter(DWHF == 1)
+```
 
-#cause of heart failure
+cause of heart failure
+```{r}
 plac %>%
   mutate(`CHFETIOL_ni` = case_when(
    `CHFETIOL` == 1 ~ "Ischemic",
@@ -459,22 +568,28 @@ plac %>%
   count(`DWHF`) %>%
   mutate(freq= round(n/sum(n),3)) %>%
   filter(DWHF == 1)
+```
 
-#cardiothoracic ratio <= .55
+cardiothoracic ratio <= .55
+```{r}
 plac %>%
   filter(`CHESTX` <= .55) %>%
   count(`DWHF`) %>%
   mutate(freq= round(n/sum(n),3)) %>%
   filter(DWHF == 1)
+```
 
-#cardiothoracic ratio > .55
+cardiothoracic ratio > .55
+```{r}
 plac %>%
   filter(`CHESTX` > .55) %>%
   count(`DWHF`) %>%
   mutate(freq= round(n/sum(n),3)) %>%
   filter(DWHF == 1)
+```
 
-#nyha class
+nyha class
+```{r}
 plac %>%
   mutate(`FUNCTCLS` = case_when(
    `FUNCTCLS` == 1 | `FUNCTCLS` == 2 ~ "1 or 2",
@@ -483,8 +598,10 @@ plac %>%
   count(`DWHF`) %>%
   mutate(freq= round(n/sum(n),3)) %>%
   filter(DWHF == 1)
+```
 
-#overall study
+overall study
+```{r}
 plac %>%
   count(`DWHF`) %>%
   mutate(freq= round(n/sum(n),3)) %>%
@@ -492,15 +609,18 @@ plac %>%
 ```
 
 #Table 4: Absolute Difference 
+
+absolute dif ejection fraction .25-.45
 ```{r}
-#absolute dif ejection fraction .25-.45
 dif1 = (613/2270) - (735/2273)
 result1 = prop.test(x = c(613,735), n=c(2270,2273), conf.level =.95, correct = FALSE)
 x1 = result1$conf.int
 print(round(dif1,3))
 print(round(x1,3))
+```
 
-#absolute dif ejection fraction <.25
+absolute dif ejection fraction <.25
+```{r}
 dif2 = (428/1127) - (556/1130)
 result2 = prop.test(x = c(428,556), n=c(1127,1130), conf.level =.95, correct = FALSE)
 x2 = result2$conf.int
@@ -508,15 +628,17 @@ print(round(dif2,3))
 print(round(x2,3))
 ```
 
+absolute dif previous digoxin use = yes
 ```{r}
-#absolute dif previous digoxin use = yes
 dif1 = (550/1498) - (688/1519)
 result1 = prop.test(x = c(550,688), n=c(1498,1519), conf.level =.95, correct = FALSE)
 x1 = result1$conf.int
 print(round(dif1,3))
 print(round(x1,3))
+```
 
-#absolute dif previous digoxin use = no
+absolute dif previous digoxin use = no
+```{r}
 dif2 = (491/1899) - (603/1884)
 result2 = prop.test(x = c(491,603), n=c(1899,1884), conf.level =.95, correct = FALSE)
 x2 = result2$conf.int
@@ -524,15 +646,17 @@ print(round(dif2,3))
 print(round(x2,3))
 ```
 
+absolute dif cause of heart failure = ischemic
 ```{r}
-#absolute dif cause of heart failure = ischemic
 dif1 = (731/2405) - (873/2398)
 result1 = prop.test(x = c(731,873), n=c(2405,2389), conf.level =.95, correct = FALSE)
 x1 = result1$conf.int
 print(round(dif1,3))
 print(round(x1,3))
+```
 
-#absolute dif cause of heart failure = nonischemic
+absolute dif cause of heart failure = nonischemic
+```{r}
 dif2 = (306/983) - (413/996)
 result2 = prop.test(x = c(306,413), n=c(983,996), conf.level =.95, correct = FALSE)
 x2 = result2$conf.int
@@ -540,15 +664,18 @@ print(round(dif2,3))
 print(round(x2,3))
 ```
 
+absolute dif ct ratio <= .55
 ```{r}
-#absolute dif ct ratio <= .55
 dif1 = (600/2220) - (724/2233)
 result1 = prop.test(x = c(600,724), n=c(2220,2233), conf.level =.95, correct = FALSE)
 x1 = result1$conf.int
 print(round(dif1,3))
 print(round(x1,3))
+```
 
-#absolute dif ct ratio > .55
+absolute dif ct ratio > .55
+```{r}
+
 dif2 = (441/1176) - (567/1170)
 result2 = prop.test(x = c(441,567), n=c(1176,1170), conf.level =.95, correct = FALSE)
 x2 = result2$conf.int
@@ -556,15 +683,17 @@ print(round(dif2,3))
 print(round(x2,3))
 ```
 
+absolute dif nyha class = 1 or 2
 ```{r}
-#absolute dif nyha class = 1 or 2
 dif1 = (601/2275) - (739/2296)
 result1 = prop.test(x = c(601,739), n=c(2275,2296), conf.level =.95, correct = FALSE)
 x1 = result1$conf.int
 print(round(dif1,3))
 print(round(x1,3))
+```
 
-#absolute dif nyha class = 3 or 4
+absolute dif nyha class = 3 or 4
+```{r}
 dif2 = (438/1118) - (552/1105)
 result2 = prop.test(x = c(438,552), n=c(1118,1105), conf.level =.95, correct = FALSE)
 x2 = result2$conf.int
@@ -572,8 +701,8 @@ print(round(dif2,3))
 print(round(x2,3))
 ```
 
+absolute dif overall pop
 ```{r}
-#absolute dif overall pop
 dif = (1041/3397) - (1291/3403)
 result = prop.test(x = c(1041,1291), n=c(3397,3403), conf.level =.95, correct = FALSE)
 x = result$conf.int
@@ -582,15 +711,18 @@ print(round(x,3))
 ```
 
 #Table 4: Risk Ratio
+
+risk ratio ejection fraction .25-.45
 ```{r}
-#risk ratio ejection fraction .25-.45
 ratio1 = (613/2270) / (735/2273)
 result1 = prop.test(x = 613*2273,n = 2270*735, conf.level =.95, correct=FALSE)
 x1 = result1$conf.int
 print(round(ratio1,3))
 print(round(x1,3))
+```
 
-#risk ratio ejection fraction <.25
+risk ratio ejection fraction <.25
+```{r}
 ratio2 = (428/1127) / (556/1130)
 result2 = prop.test(x = 428*1130,n = 1127*556, conf.level =.95, correct=FALSE)
 x2 = result2$conf.int
@@ -598,15 +730,17 @@ print(round(ratio2,3))
 print(round(x2,3))
 ```
 
+risk ratio prev digoxin use = yes
 ```{r}
-#risk ratio prev digoxin use = yes
 ratio1 = (550/1498) / (688/1519)
 result1 = prop.test(x = 550*1519,n = 1498*688, conf.level =.95, correct=FALSE)
 x1 = result1$conf.int
 print(round(ratio1,3))
 print(round(x1,3))
+```
 
-#risk ratio prev digoxin use = no
+risk ratio prev digoxin use = no
+```{r}
 ratio2 = (491/1899) / (603/1884)
 result2 = prop.test(x = 491*1884,n = 1899*603, conf.level =.95, correct=FALSE)
 x2 = result2$conf.int
@@ -614,15 +748,17 @@ print(round(ratio2,3))
 print(round(x2,3))
 ```
 
+risk ratio cause of heart failure = ischemic
 ```{r}
-#risk ratio cause of heart failure = ischemic
 ratio1 = (731/2405) / (873/2398)
 result1 = prop.test(x = 731*2398,n = 2405*873, conf.level =.95, correct=FALSE)
 x1 = result1$conf.int
 print(round(ratio1,3))
 print(round(x1,3))
+```
 
-#risk ratio cause of heart failure = nonischemic
+risk ratio cause of heart failure = nonischemic
+```{r}
 ratio2 = (306/983) / (413/996)
 result2 = prop.test(x = 306*996,n = 983*413, conf.level =.95, correct=FALSE)
 x2 = result2$conf.int
@@ -630,15 +766,17 @@ print(round(ratio2,3))
 print(round(x2,3))
 ```
 
+risk ratio ct ratio <= .55
 ```{r}
-#risk ratio ct ratio <= .55
 ratio1 = (600/2270) / (724/2233)
 result1 = prop.test(x = 600*2233,n = 2270*724, conf.level =.95, correct=FALSE)
 x1 = result1$conf.int
 print(round(ratio1,3))
 print(round(x1,3))
+```
 
-#risk ratio ct ratio > .55
+risk ratio ct ratio > .55
+```{r}
 ratio2 = (441/1176) / (567/1170)
 result2 = prop.test(x = 441*1170,n = 1176*567, conf.level =.95, correct=FALSE)
 x2 = result2$conf.int
@@ -646,15 +784,17 @@ print(round(ratio2,3))
 print(round(x2,3))
 ```
 
+risk ratio nyha = 1 or 2
 ```{r}
-#risk ratio nyha = 1 or 2
 ratio1 = (601/2275) / (739/2296)
 result1 = prop.test(x = 601*2296,n = 2275*739, conf.level =.95, correct=FALSE)
 x1 = result1$conf.int
 print(round(ratio1,3))
 print(round(x1,3))
+```
 
-#risk ratio nyha = 3 or 4
+risk ratio nyha = 3 or 4
+```{r}
 ratio2 = (438/1118) / (552/1105)
 result2 = prop.test(x = 438*1105,n = 1118*552, conf.level =.95, correct=FALSE)
 x2 = result2$conf.int
@@ -662,8 +802,8 @@ print(round(ratio2,3))
 print(round(x2,3))
 ```
 
+risk ratio overall pop
 ```{r}
-#risk ratio overall pop
 ratio = (1041/3397) / (1291/3403)
 result = prop.test(x = 1041*3403, n= 3397*1291, conf.level =.95, correct = FALSE)
 x = result$conf.int
