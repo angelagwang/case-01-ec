@@ -686,7 +686,6 @@ print(round(x1,3))
 
 absolute dif ct ratio > .55
 ```{r}
-
 dif2 = (441/1176) - (567/1170)
 result2 = prop.test(x = c(441,567), n=c(1176,1170), conf.level =.95, correct = FALSE)
 x2 = result2$conf.int
@@ -725,124 +724,138 @@ print(round(x,3))
 
 risk ratio ejection fraction .25-.45
 ```{r}
-ratio1 = (613/2270) / (735/2273)
-result1 = prop.test(x = 613*2273,n = 2270*735, conf.level =.95, correct=FALSE)
-x1 = result1$conf.int
-print(round(ratio1,3))
-print(round(x1,3))
+data2 <- data %>%
+  filter(EJF_PER >= 25 & EJF_PER <= 45) 
+  
+coxm1 <- coxph(Surv(DWHFDAYS, DWHF) ~ TRTMT, data = data2)
+sum <- summary(coxm1)
+sum$conf.int
 ```
 
 risk ratio ejection fraction <.25
 ```{r}
-ratio2 = (428/1127) / (556/1130)
-result2 = prop.test(x = 428*1130,n = 1127*556, conf.level =.95, correct=FALSE)
-x2 = result2$conf.int
-print(round(ratio2,3))
-print(round(x2,3))
+data2 <- data %>%
+  filter(EJF_PER < 25) 
+  
+coxm1 <- coxph(Surv(DWHFDAYS, DWHF) ~ TRTMT, data = data2)
+sum <- summary(coxm1)
+sum$conf.int
 ```
 
-risk ratio prev digoxin use = yes
+risk ratio previous digoxin use = yes
 ```{r}
-ratio1 = (550/1498) / (688/1519)
-result1 = prop.test(x = 550*1519,n = 1498*688, conf.level =.95, correct=FALSE)
-x1 = result1$conf.int
-print(round(ratio1,3))
-print(round(x1,3))
+data2 <- data %>%
+  filter(DIGUSE == 1) 
+  
+coxm1 <- coxph(Surv(DWHFDAYS, DWHF) ~ TRTMT, data = data2)
+sum <- summary(coxm1)
+sum$conf.int
 ```
 
-risk ratio prev digoxin use = no
+risk ratio previous digoxin use = no
 ```{r}
-ratio2 = (491/1899) / (603/1884)
-result2 = prop.test(x = 491*1884,n = 1899*603, conf.level =.95, correct=FALSE)
-x2 = result2$conf.int
-print(round(ratio2,3))
-print(round(x2,3))
+data2 <- data %>%
+  filter(DIGUSE == 0) 
+  
+coxm1 <- coxph(Surv(DWHFDAYS, DWHF) ~ TRTMT, data = data2)
+sum <- summary(coxm1)
+sum$conf.int
 ```
 
 risk ratio cause of heart failure = ischemic
 ```{r}
-ratio1 = (731/2405) / (873/2398)
-result1 = prop.test(x = 731*2398,n = 2405*873, conf.level =.95, correct=FALSE)
-x1 = result1$conf.int
-print(round(ratio1,3))
-print(round(x1,3))
+data2 <- data %>%
+  mutate(`CHFETIOL_ni` = case_when(
+   `CHFETIOL` == 1 ~ "Ischemic",
+   TRUE ~ "Nonischemic")) %>%
+  filter(CHFETIOL_ni == "Ischemic") 
+  
+coxm1 <- coxph(Surv(DWHFDAYS, DWHF) ~ TRTMT, data = data2)
+sum <- summary(coxm1)
+sum$conf.int
 ```
 
 risk ratio cause of heart failure = nonischemic
 ```{r}
-ratio2 = (306/983) / (413/996)
-result2 = prop.test(x = 306*996,n = 983*413, conf.level =.95, correct=FALSE)
-x2 = result2$conf.int
-print(round(ratio2,3))
-print(round(x2,3))
+data2 <- data %>%
+  mutate(`CHFETIOL_ni` = case_when(
+   `CHFETIOL` == 1 ~ "Ischemic",
+   TRUE ~ "Nonischemic")) %>%
+  filter(CHFETIOL_ni == "Nonischemic") 
+  
+coxm1 <- coxph(Surv(DWHFDAYS, DWHF) ~ TRTMT, data = data2)
+sum <- summary(coxm1)
+sum$conf.int
 ```
 
 risk ratio ct ratio <= .55
 ```{r}
-ratio1 = (600/2270) / (724/2233)
-result1 = prop.test(x = 600*2233,n = 2270*724, conf.level =.95, correct=FALSE)
-x1 = result1$conf.int
-print(round(ratio1,3))
-print(round(x1,3))
+data2 <- data %>%
+  filter(CHESTX <= .55) 
+  
+coxm1 <- coxph(Surv(DWHFDAYS, DWHF) ~ TRTMT, data = data2)
+sum <- summary(coxm1)
+sum$conf.int
 ```
 
 risk ratio ct ratio > .55
 ```{r}
-ratio2 = (441/1176) / (567/1170)
-result2 = prop.test(x = 441*1170,n = 1176*567, conf.level =.95, correct=FALSE)
-x2 = result2$conf.int
-print(round(ratio2,3))
-print(round(x2,3))
+data2 <- data %>%
+  filter(CHESTX > .55) 
+  
+coxm1 <- coxph(Surv(DWHFDAYS, DWHF) ~ TRTMT, data = data2)
+sum <- summary(coxm1)
+sum$conf.int
 ```
+
 
 risk ratio nyha = 1 or 2
 ```{r}
-ratio1 = (601/2275) / (739/2296)
-result1 = prop.test(x = 601*2296,n = 2275*739, conf.level =.95, correct=FALSE)
-x1 = result1$conf.int
-print(round(ratio1,3))
-print(round(x1,3))
+data2 <- data %>%
+  mutate(`FUNCTCLS` = case_when(
+   `FUNCTCLS` == 1 | `FUNCTCLS` == 2 ~ "1 or 2",
+   TRUE ~ "3 or 4")) %>%
+  filter(FUNCTCLS == "1 or 2") 
+  
+coxm1 <- coxph(Surv(DWHFDAYS, DWHF) ~ TRTMT, data = data2)
+sum <- summary(coxm1)
+sum$conf.int
 ```
 
 risk ratio nyha = 3 or 4
 ```{r}
-ratio2 = (438/1118) / (552/1105)
-result2 = prop.test(x = 438*1105,n = 1118*552, conf.level =.95, correct=FALSE)
-x2 = result2$conf.int
-print(round(ratio2,3))
-print(round(x2,3))
+data2 <- data %>%
+  mutate(`FUNCTCLS` = case_when(
+   `FUNCTCLS` == 1 | `FUNCTCLS` == 2 ~ "1 or 2",
+   TRUE ~ "3 or 4")) %>%
+  filter(FUNCTCLS == "3 or 4") 
+  
+coxm1 <- coxph(Surv(DWHFDAYS, DWHF) ~ TRTMT, data = data2)
+sum <- summary(coxm1)
+sum$conf.int
 ```
 
 risk ratio overall pop
 ```{r}
-ratio = (1041/3397) / (1291/3403)
-result = prop.test(x = 1041*3403, n= 3397*1291, conf.level =.95, correct = FALSE)
-x = result$conf.int
-print(round(ratio,3))
-print(round(x,3))
-```
-
-
-```{r, include = FALSE}
-data2 <- data %>%
-  mutate(EJF_PER = case_when(
-    EJF_PER >= 25 & EJF_PER <= 45 ~ ".25-.45",
-    EJF_PER < 25 ~ "<.25")) %>%
-  mutate(`CHFETIOL` = case_when(
-    `CHFETIOL` == 1 ~ "Ischemic",
-    TRUE ~ "Nonischemic")) %>% 
-  mutate(CHESTX= case_when(
-    CHESTX <= .55 ~ "<=.55",
-    TRUE ~ ">.55")) %>%
-  mutate(FUNCTCLS = case_when(
-    FUNCTCLS== 1 | FUNCTCLS == 2 ~ "1 or 2",
-    TRUE ~ "3 or 4"))
-
-coxm1 <- coxph(Surv(DWHFDAYS, DWHF) ~ TRTMT + EJF_PER + CHFETIOL + CHESTX + FUNCTCLS, data = data2)
-
-summary(coxm1)
+coxm1 <- coxph(Surv(DWHFDAYS, DWHF) ~ TRTMT, data = data)
+sum <- summary(coxm1)
+sum$conf.int
 ```
 
 
 #Discussion
-The values I calculated for table 1 and table 4 (except the risk ratio column) are very close to the ones in the report. Most of them are only off by .1% or .2% which is likely just due to differences in rounding. However, the risk ratio column in table 4 that I calculated has more differences from the original paper. The values are off by no more than .15, and the confidence intervals are much smaller than in the original paper. I calculated the risk ratios by dividing the percentage of patients on digoxin that experienced each level of the variable (ejection fraction, previous digoxin use cause of heart failure, ct ratio, NYHA class) by the percentage of patients on the placebo that experienced that same level. I chose to do it this way because that is how a risk ratio is usually calculated by hand. The researchers said that they estimated the risk ratios from the Cox proportional-hazards model; however, I tried finding the risk ratios using the model output, and the values were very different from the ones in the paper since many were over 1. Calculating the risk ratios by hand and using the actual definition of risk ratios brought me closer than trying to estimate them from the model, so I chose hand calculation instead. I believe are differences are because the researchers were very unclear in the paper how they calculated their risk ratios. Because it was so vague, I struggled with finding the right calculations to give me the same output. Additionally, Professor Jiang mentioned that the paper used the term risk ratio which is not actually the right term for the calculations which leads to grater confusion. I couldn't figure out what other calculations/formulas the reserarchers were doing to get those number, so I just chose the traditional method to find risk ratios since that was what the paper originally indicated. 
+The values I calculated for table 1 and table 4 are mostly exactly correct, but there are a few values that were slightly off from the ones in the report. There are a few more discrepancies in table 1 than in table 4. 
+
+Discrepancies in Table 1:
+Digoxin: sd of ejection fraction, percent non white, percent >= 4 signs or symptoms of CHF, percent nonischemic cause of CHF, percent other cause of CHF, percent nitrates
+
+Placebo: percent nonischemic cause of CHF, percent hypertensive cause of CHF, percent idiopathic cause of CHF, percent taking daily dose of .250 mg
+
+Discrepancies in Table 4:
+Digoxin:percent nonischemic cause of CHF
+
+Placebo: percent nonischemic cause of CHF, percent in NYHA class 3 or 4
+
+Absolute Difference: cause of heart failure
+
+Most of them only differ by .1% or .2% for the proportions and .01 or .02 in the ratios. These are most likely due to errors in rounding. It seems that calculations involving nonischemic cause of CHF are consistently off by a little bit. This variable was one that the researchers made, and they were not explicitly clear how they did so. Therefore, there could be slight differences in how I coded this variable with how the researchers did.  
